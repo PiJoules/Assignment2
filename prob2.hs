@@ -1,3 +1,10 @@
+-- Leonard Chan
+-- Usage:
+-- 1. Compile using ghc
+--    - $ ghc prob2.hs
+-- 2. Run the executable produced
+--    - ./prob2
+
 import Data.Map
 import Data.List
 

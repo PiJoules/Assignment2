@@ -1,3 +1,12 @@
+-- Leonard Chan
+-- 1. Compile using ghc
+--    - $ ghc prob1.hs
+-- 2. Run the executable produced
+--    - ./prob1
+-- Explanation:
+-- Inserting a random permutation of integers into a BST produces a nearly optimal (balanced) BST because when navigating down the BST on insertion, there is always a 50/50 chance that the number inserted will be greater/less than the node currently being compared against. When inserting a number, the chance that that the relationship between the number and the current node and the relationship between this number and the next node are opposite increases.
+-- For example, if the number to insert is greater than the head of the tree, there is a higher chance that this number is less than the next node to compare against. This is verified experminetally in this problem. In the above example output, the number of nodes in the BST is 6305 (6305 unique numbers are in the BST), and the height of this resulting BST is 29. For this BST to be an optimal BST, it must be close to balanced. The height of a balanced BST is log2(number of nodes). The height for a balanced BST cotnaining the same number of nodes is approximately 12.62. 29 (the actual height) is relatively close to 12 given over 6000 nodes, and both nombers are on the same magnitude.
+
 import System.Random
 
 -- Declare Tree data type to contain an Empty data type
