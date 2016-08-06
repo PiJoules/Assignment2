@@ -62,14 +62,12 @@ heap_of_trees [] = []
 heap_of_trees (x:xs) = (leaf x):(heap_of_trees xs)
 
 -- Sort a list of trees
-tree_compare (Branch (_, freq) _ _) (Branch (_, freq2) _ _)
-    | freq < freq2 = LT
-    | otherwise = GT
+tree_compare (Branch (_, freq) _ _) (Branch (_, freq2) _ _) = compare freq freq2
 
 -- Function for actually creating the huffman tree
-huffman :: [Tree (Maybe Char, Int)] -> Tree (Maybe Char, Int)
-huffman [x] = x
-huffman ((Branch (c, freq) lb rb):(Branch (c2, freq2) lb2 rb2):rest) = let
+huffman' :: [Tree (Maybe Char, Int)] -> Tree (Maybe Char, Int)
+huffman' [x] = x
+huffman' ((Branch (c, freq) lb rb):(Branch (c2, freq2) lb2 rb2):rest) = let
     lt = Branch (c, freq) lb rb
     rt = Branch (c2, freq2) lb2 rb2
     combined = Branch (Nothing, freq + freq2) lt rt
@@ -77,16 +75,50 @@ huffman ((Branch (c, freq) lb rb):(Branch (c2, freq2) lb2 rb2):rest) = let
     in
     huffman $ sortBy tree_compare lst
 
+-- Initial sorting
+huffman :: [Tree (Maybe Char, Int)] -> Tree (Maybe Char, Int)
+huffman lst = huffman' $ sortBy tree_compare lst
+
 left_branch Empty = Empty
 left_branch (Branch _ lb _) = lb
 
 right_branch Empty = Empty
 right_branch (Branch _ _ rb) = rb
 
+encode_char :: Char -> Tree (Maybe Char, Int) -> [Char] -> [Char]
+encode_char c (Branch (Just c2, _) Empty Empty) buffer
+    | c == c2 = buffer
+    | otherwise = []
+encode_char c (Branch (Nothing, _) lb rb) buffer = (encode_char c lb (buffer ++ "0")) ++ (encode_char c rb (buffer ++ "1"))
+
+-- Encode a string
+encode :: [Char] -> Tree (Maybe Char, Int) -> [Char]
+encode [] _ = []
+encode (x:xs) tree = (encode_char x tree "") ++ (encode xs tree)
+
+-- Decode a string
+decode' :: [Char] -> Tree (Maybe Char, Int) -> Tree (Maybe Char, Int) -> [Char]
+decode' [] _ _ = []
+decode' lst (Branch (Just c, _) Empty Empty) original_tree = [c] ++ (decode' lst original_tree original_tree)
+decode' ('0':xs) (Branch _ lb _) original_tree = decode' xs lb original_tree
+decode' ('1':xs) (Branch _ _ rb) original_tree = decode' xs rb original_tree
+
+decode :: [Char] -> Tree (Maybe Char, Int) -> [Char]
+decode lst tree = decode' lst tree tree
 
 main = do
-    let test_string = "111112222222333333333366666666666666666666666666666666666666666666655555555555555555555444444444444444"
+    let test_string = "aaaaaaaabbbcdefgh"
     let test_elems = heapify_string test_string
-    let result = huffman $ heap_of_trees $ test_elems
+    let tree = huffman $ heap_of_trees $ test_elems
+    let encoding = encode test_string tree
+    let decoding = decode encoding tree
+    print "Test string:"
+    print test_string
+    print "Frequencies:"
     print test_elems
-    print result
+    print "Huffman tree:"
+    print tree
+    print "Encoding:"
+    print encoding
+    print "Decoding the encoding:"
+    print decoding
